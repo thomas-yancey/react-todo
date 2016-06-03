@@ -1,4 +1,7 @@
 var App = React.createClass({
+
+  // ------------------------------------------------
+  // Item Server Actions
   loadItemsFromServer: function(todoId){
     var url = "/todos/" + todoId + "/items"
     $.ajax({
@@ -65,6 +68,23 @@ var App = React.createClass({
     });
   },
 
+  handleListClick: function(todoId){
+    this.loadItemsFromServer(todoId)
+    this.setState({openList: todoId})
+  },
+
+  handleItemClick: function(itemId){
+    this.deleteItemFromServer(itemId)
+  },
+
+  toggleComplete: function(item){
+    var newStatus = item.completed ? false : true
+    this.updateItemOnServer(item, {item: {completed: newStatus}})
+  },
+
+  // ------------------------------------------------
+  // Todo Server Actions
+
   loadTodosFromServer: function(){
     $.ajax({
       url: "/todos",
@@ -79,18 +99,22 @@ var App = React.createClass({
     });
   },
 
-  handleListClick: function(todoId){
-    this.loadItemsFromServer(todoId)
-    this.setState({openList: todoId})
-  },
+  addTodoToServer: function(data){
+    var data = data
 
-  handleItemClick: function(itemId){
-    this.deleteItemFromServer(itemId)
-  },
-
-  toggleComplete: function(item){
-    var newStatus = item.completed ? false : true
-    this.updateItemOnServer(item, {item: {completed: newStatus}})
+    $.ajax({
+      url: "/todos",
+      dataType: 'json',
+      data: data,
+      method: "POST",
+      cache: false,
+      success: function(data) {
+        this.setState({todos: data});
+      }.bind(this),
+      error: function(xhr, status, err){
+        console.error("/todos", status, err.toString());
+      }.bind(this)
+    });
   },
 
   getInitialState: function(){
@@ -116,7 +140,8 @@ var App = React.createClass({
       <div className="overall-app">
         <Todos
           todos={this.state.todos}
-          handleClick={this.handleListClick}/>
+          handleClick={this.handleListClick}
+          addTodoToServer = {this.addTodoToServer}/>
         {this.state.openList !== null
           ?
         <ListItems
