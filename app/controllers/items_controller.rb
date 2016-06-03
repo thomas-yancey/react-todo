@@ -5,20 +5,11 @@ class ItemsController < ApplicationController
     render json: @items
   end
 
-  def new
-  end
-
   def create
     todo = Todo.find(params[:todo_id])
     todo.items << Item.create(content: params[:content])
     @items = Item.where(todo_id: params[:todo_id]).order(id: :asc)
     render json: @items
-  end
-
-  def show
-  end
-
-  def edit
   end
 
   def update

@@ -29,6 +29,10 @@ var NewItemForm = React.createClass({
     return {itemValue: ""}
   },
 
+  handleItemValueChange: function(e){
+    this.setState({itemValue: e.target.value})
+  },
+
   handleSubmit: function(e){
     e.preventDefault();
     var content = this.state.itemValue.trim()
@@ -37,10 +41,6 @@ var NewItemForm = React.createClass({
     };
     this.props.handleItemSubmit(this.props.todo, content)
     this.setState({itemValue: ""})
-  },
-
-  handleItemValueChange: function(e){
-    this.setState({itemValue: e.target.value})
   },
 
   render: function(){
@@ -60,12 +60,9 @@ var NewItemForm = React.createClass({
 });
 
 var EditToggle = React.createClass({
-  toggle: function(){
-    this.props.handleEdit();
-  },
 
   render: function(){
-    return(<button onClick={this.toggle}>Edit</button>)
+    return(<button onClick={this.props.handleEdit}>Edit</button>)
   }
 });
 
@@ -86,6 +83,7 @@ var EditItemForm = React.createClass({
       return;
     };
     this.props.updateItemOnServer(this.props.item, {item: {content: content}})
+    this.props.handleEdit()
     this.setState({itemValue: ""})
   },
 
@@ -93,7 +91,7 @@ var EditItemForm = React.createClass({
 
     var actionUrl = "/todos/" + this.props.item.todo_id + "/items" + this.props.item.id;
     return(
-      <form action={actionUrl} method="POST" h onSubmit={this.handleSubmit}>
+      <form action={actionUrl} method="POST" onSubmit={this.handleSubmit}>
         <input type="hidden" name="_method" value="put" />
         <input
           type="textarea"
@@ -126,6 +124,7 @@ var Item = React.createClass({
         <EditItemForm
           item={this.props.item}
           updateItemOnServer={this.props.updateItemOnServer}
+          handleEdit={this.handleEdit}
         /> : "" }
     </li>
     )
@@ -137,11 +136,13 @@ var ListItems = React.createClass({
   render: function(){
     var items = this.props.items.map(function(item, index){
       return (
-      <Item item={item}
-        handleClick={this.props.handleClick}
-        toggleComplete={this.props.toggleComplete}
-        updateItemOnServer={this.props.updateItemOnServer}
-        />
+        <div key={item.id}>
+          <Item item={item}
+            handleClick={this.props.handleClick}
+            toggleComplete={this.props.toggleComplete}
+            updateItemOnServer={this.props.updateItemOnServer}
+            />
+        </div>
       )
     }.bind(this));
 
