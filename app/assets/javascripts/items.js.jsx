@@ -102,7 +102,7 @@ var EditItemForm = React.createClass({
       </form>
     )
   }
-})
+});
 
 var Item = React.createClass({
   getInitialState: function(){

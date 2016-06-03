@@ -92,16 +92,11 @@ var App = React.createClass({
       cache: false,
       success: function(data) {
         this.setState({todos: data});
-      }.bind(this),
-      error: function(xhr, status, err){
-        console.error("/todos", status, err.toString());
       }.bind(this)
     });
   },
 
   addTodoToServer: function(data){
-    var data = data
-
     $.ajax({
       url: "/todos",
       dataType: 'json',
@@ -117,6 +112,35 @@ var App = React.createClass({
     });
   },
 
+  updateTodoOnServer: function(todo, data){
+    var url = "/todos/" + todo.id
+    debugger
+    $.ajax({
+      url: url,
+      data: data,
+      method: "put",
+      dataType: 'json',
+      cache: false,
+      success: function(data){
+        this.setState({todos: data});
+      }.bind(this)
+    });
+  },
+
+  deleteTodoOnServer: function(todo){
+    var url = "/todos/" + todo.id
+    debugger
+    $.ajax({
+      url: url,
+      method: "delete",
+      dataType: 'json',
+      cache: false,
+      success: function(data){
+        this.setState({todos: data, openList: null, items:[]});
+      }.bind(this)
+    });
+  },
+
   getInitialState: function(){
     return (
       { todos: [],
@@ -126,29 +150,40 @@ var App = React.createClass({
     )
   },
 
+  findOpenTodo: function(todo){
+    return todo.id === this.state.openList
+  },
+
   componentDidMount: function(){
     this.loadTodosFromServer();
   },
 
   render: function(){
     title = ""
+    openTodo = null
     if (this.state.openList){
-      title = this.state.todos[this.state.openList - 1].title
+      openTodo = this.state.todos.find(this.findOpenTodo);
+      title = this.state.todos[this.state.openList - 1].title;
     };
+
 
     return (
       <div className="overall-app">
         <Todos
           todos={this.state.todos}
+          openList={this.state.openList}
           handleClick={this.handleListClick}
-          addTodoToServer = {this.addTodoToServer}/>
+          addTodoToServer = {this.addTodoToServer}
+          updateTodoOnServer = {this.updateTodoOnServer}
+          deleteTodoOnServer = {this.deleteTodoOnServer}
+        />
         {this.state.openList !== null
           ?
         <ListItems
           updateItemOnServer={this.updateItemOnServer}
           items={this.state.items}
           toggleComplete={this.toggleComplete}
-          todo={this.state.todos[this.state.openList - 1]}
+          todo={openTodo}
           handleClick={this.handleItemClick}
           handleItemSubmit = {this.addItemToServer}/>
         : "" }
