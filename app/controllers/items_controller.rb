@@ -1,7 +1,7 @@
 class ItemsController < ApplicationController
 
   def index
-    @items = Item.where(todo_id: params[:todo_id])
+    @items = Item.where(todo_id: params[:todo_id]).order(id: :asc)
     render json: @items
   end
 
@@ -9,6 +9,10 @@ class ItemsController < ApplicationController
   end
 
   def create
+    todo = Todo.find(params[:todo_id])
+    todo.items << Item.create(content: params[:content])
+    @items = Item.where(todo_id: params[:todo_id]).order(id: :asc)
+    render json: @items
   end
 
   def show
@@ -18,18 +22,23 @@ class ItemsController < ApplicationController
   end
 
   def update
-    @items = Item.where(todo_id: params[:todo_id])
     item = Item.find(params[:id])
-    item.update_attributes(completed: params[:completed])
+    item.update_attributes(item_params)
+    @items = Item.where(todo_id: params[:todo_id]).order(id: :asc)
     render json: @items
   end
 
   def destroy
-    @items = Item.where(todo_id: params[:todo_id])
     item = Item.find(params[:id])
     item.destroy
+    @items = Item.where(todo_id: params[:todo_id]).order(id: :asc)
     render json: @items
   end
 
+  private
+
+  def item_params
+    params.require(:item).permit(:content, :completed)
+  end
 
 end

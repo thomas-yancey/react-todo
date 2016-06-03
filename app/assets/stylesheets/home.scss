@@ -2,6 +2,30 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+body {
+  font-family: arial;
+}
+
+.lists {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  overflow: auto;
+  padding: 20px;
+}
+
+.ListItems {
+  position: absolute;
+  left: 300px;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+
+}
+
 .open {
   color: blue;
 }
+
