@@ -14,12 +14,12 @@ var EditListForm = React.createClass({
   handleSubmit: function(e){
     e.preventDefault()
     data = {todo: {title: this.state.title}}
-    this.props.UpateTodoOnServer(data)
+    this.props.updateTodoOnServer(this.props.todo, data)
     this.setState({title: ""})
   },
 
   render: function(){
-    var url = url = "/todos/" + this.props.todo.id
+    var url = "/todos/" + this.props.todo.id
     return (
       <form action ={url} method="POST" onSubmit={this.handleSubmit}>
         <input type="hidden" name="_method" value="put" />
@@ -56,6 +56,19 @@ var NewListForm = React.createClass({
   }
 });
 
+var DeleteListButton = React.createClass({
+
+  handleClick: function(){
+    this.props.deleteTodoOnServer(this.props.todo)
+  },
+
+  render: function(){
+    return (
+      <button onClick={this.handleClick}>Delete List</button>
+    );
+  }
+});
+
 var Todos = React.createClass({
 
   clickTodo: function(id){
@@ -65,13 +78,15 @@ var Todos = React.createClass({
   render: function(){
 
     var todoLists = this.props.todos.map(function(todo, index){
-      var style = (index + 1) === this.props.openList ? "open" : "closed-list";
+      var style = todo.id === this.props.openList ? "open" : "closed-list";
       return (
         <li
           className={style}
           onClick={this.clickTodo.bind(this, todo.id)}
           key={todo.id}>
         {todo.title}
+        <EditListForm todo={todo} updateTodoOnServer={this.props.updateTodoOnServer}/>
+        <DeleteListButton todo={todo} deleteTodoOnServer={this.props.deleteTodoOnServer}/>
         </li>
       )
     }.bind(this));
