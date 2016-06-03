@@ -23,23 +23,141 @@ var ToggleItemCompleted = React.createClass({
   }
 });
 
+var NewItemForm = React.createClass({
+
+  getInitialState: function(){
+    return {itemValue: ""}
+  },
+
+  handleSubmit: function(e){
+    e.preventDefault();
+    var content = this.state.itemValue.trim()
+    if (!content){
+      return;
+    };
+    this.props.handleItemSubmit(this.props.todo, content)
+    this.setState({itemValue: ""})
+  },
+
+  handleItemValueChange: function(e){
+    this.setState({itemValue: e.target.value})
+  },
+
+  render: function(){
+
+    var actionUrl = "/todos/" + this.props.todo.id + "/items";
+    return(
+      <form action={actionUrl} method="POST" onSubmit={this.handleSubmit}>
+        <input
+          type="text"
+          placeholder="new item"
+          value={this.state.itemValue}
+          onChange={this.handleItemValueChange}/>
+        <input type="submit" placeholder="submit"/>
+      </form>
+    )
+  }
+});
+
+var EditToggle = React.createClass({
+  toggle: function(){
+    this.props.handleEdit();
+  },
+
+  render: function(){
+    return(<button onClick={this.toggle}>Edit</button>)
+  }
+});
+
+var EditItemForm = React.createClass({
+
+  getInitialState: function(){
+    return {itemValue: this.props.item.content}
+  },
+
+  handleItemValueChange: function(e){
+    this.setState({itemValue: e.target.value})
+  },
+
+  handleSubmit: function(e){
+    e.preventDefault();
+    var content = this.state.itemValue.trim()
+    if (!content){
+      return;
+    };
+    this.props.updateItemOnServer(this.props.item, {item: {content: content}})
+    this.setState({itemValue: ""})
+  },
+
+  render: function(){
+
+    var actionUrl = "/todos/" + this.props.item.todo_id + "/items" + this.props.item.id;
+    return(
+      <form action={actionUrl} method="POST" h onSubmit={this.handleSubmit}>
+        <input type="hidden" name="_method" value="put" />
+        <input
+          type="textarea"
+          placeholder="new item"
+          value={this.state.itemValue}
+          onChange={this.handleItemValueChange}/>
+        <input type="submit" placeholder="submit"/>
+      </form>
+    )
+  }
+})
+
+var Item = React.createClass({
+  getInitialState: function(){
+    return {editing: false}
+  },
+
+  handleEdit: function(){
+    this.setState({editing: !this.state.editing})
+  },
+
+  render: function(){
+    return (
+    <li key={this.props.item.content}>
+      <h4>{this.props.item.content}</h4>
+      <DeleteItem item={this.props.item} handleClick={this.props.handleClick}/>
+      <ToggleItemCompleted item={this.props.item} toggleComplete={this.props.toggleComplete}/>
+      <EditToggle handleEdit={this.handleEdit}/>
+      {this.state.editing ?
+        <EditItemForm
+          item={this.props.item}
+          updateItemOnServer={this.props.updateItemOnServer}
+        /> : "" }
+    </li>
+    )
+  }
+});
+
 var ListItems = React.createClass({
 
   render: function(){
     var items = this.props.items.map(function(item, index){
       return (
-        <li key={item.content}>
-          <p>{item.content}</p>
-          <DeleteItem item={item} handleClick={this.props.handleClick}/>
-          <ToggleItemCompleted item={item} toggleComplete={this.props.toggleComplete}/>
-        </li>
+      <Item item={item}
+        handleClick={this.props.handleClick}
+        toggleComplete={this.props.toggleComplete}
+        updateItemOnServer={this.props.updateItemOnServer}
+        />
       )
     }.bind(this));
 
     return (
-      <ul>
-        {items}
-      </ul>
+      <div className="ListItems">
+        <h2>{this.props.todo.title}</h2>
+        <div className="ItemForm">
+          <NewItemForm
+            todo={this.props.todo}
+            handleItemSubmit={this.props.handleItemSubmit}
+          />
+        </div>
+        <ul>
+          {items}
+        </ul>
+      </div>
     )
   }
 });

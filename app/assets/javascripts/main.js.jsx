@@ -1,6 +1,6 @@
 var App = React.createClass({
   loadItemsFromServer: function(todoId){
-    var url = this.props.url + "/" + todoId + "/items"
+    var url = "/todos/" + todoId + "/items"
     $.ajax({
       url: url,
       dataType: 'json',
@@ -9,13 +9,13 @@ var App = React.createClass({
         this.setState({items: data});
       }.bind(this),
       error: function(xhr, status, err){
-        console.error(this.props.url, status, err.toString());
+        console.error("/todos", status, err.toString());
       }.bind(this)
     });
   },
 
   deleteItemFromServer: function(item){
-    var url = this.props.url + "/" + item.todo_id + "/items/" + item.id
+    var url = "/todos/" + item.todo_id + "/items/" + item.id
     $.ajax({
       url: url,
       method: "DELETE",
@@ -25,14 +25,13 @@ var App = React.createClass({
         this.setState({items: data});
       }.bind(this),
       error: function(xhr, status, err){
-        console.error(this.props.url, status, err.toString());
+        console.error("/todos", status, err.toString());
       }.bind(this)
     });
   },
 
-  updateItemFromServer: function(item, newStatus){
-    var url = this.props.url + "/" + item.todo_id + "/items/" + item.id
-    var data = {completed: newStatus}
+  updateItemOnServer: function(item, data){
+    var url = "/todos/" + item.todo_id + "/items/" + item.id
     $.ajax({
       url: url,
       method: "PUT",
@@ -43,21 +42,39 @@ var App = React.createClass({
         this.setState({items: data});
       }.bind(this),
       error: function(xhr, status, err){
-        console.error(this.props.url, status, err.toString());
+        console.error("/todos", status, err.toString());
+      }.bind(this)
+    });
+  },
+
+  addItemToServer: function(todo, content){
+    var url = "/todos/" + todo.id + "/items"
+    var data = {content: content}
+    $.ajax({
+      url: url,
+      method: "POST",
+      dataType: 'json',
+      data: data,
+      cache: false,
+      success: function(data) {
+        this.setState({items: data});
+      }.bind(this),
+      error: function(xhr, status, err){
+        console.error("/todos", status, err.toString());
       }.bind(this)
     });
   },
 
   loadTodosFromServer: function(){
     $.ajax({
-      url: this.props.url,
+      url: "/todos",
       dataType: 'json',
       cache: false,
       success: function(data) {
         this.setState({todos: data});
       }.bind(this),
       error: function(xhr, status, err){
-        console.error(this.props.url, status, err.toString());
+        console.error("/todos", status, err.toString());
       }.bind(this)
     });
   },
@@ -73,7 +90,7 @@ var App = React.createClass({
 
   toggleComplete: function(item){
     var newStatus = item.completed ? false : true
-    this.updateItemFromServer(item, newStatus)
+    this.updateItemOnServer(item, {item: {completed: newStatus}})
   },
 
   getInitialState: function(){
@@ -90,16 +107,26 @@ var App = React.createClass({
   },
 
   render: function(){
+    title = ""
+    if (this.state.openList){
+      title = this.state.todos[this.state.openList - 1].title
+    };
+
     return (
       <div className="overall-app">
         <Todos
           todos={this.state.todos}
-          openList={this.state.openList}
           handleClick={this.handleListClick}/>
+        {this.state.openList !== null
+          ?
         <ListItems
+          updateItemOnServer={this.updateItemOnServer}
           items={this.state.items}
           toggleComplete={this.toggleComplete}
-          handleClick={this.handleItemClick}/>
+          todo={this.state.todos[this.state.openList - 1]}
+          handleClick={this.handleItemClick}
+          handleItemSubmit = {this.addItemToServer}/>
+        : "" }
       </div>
     )
   }
